@@ -40,3 +40,38 @@ def my_stft(signal, n_fft=2048, hop_length=512):
     spectrogram_matrix = np.array(spectrogram).T
     
     return spectrogram_matrix
+
+
+# --------------------------------------------------------
+# 테스트: 주파수가 점점 올라가는 소리(Chirp 신호) 만들어보기
+# --------------------------------------------------------
+fs = 16000 # 16kHz 샘플링
+t = np.linspace(0, 2, fs * 2) # 2초 길이
+
+# 처음엔 100Hz였다가 끝날 때 4000Hz로 점점 올라가는 새소리 같은 파동
+signal_chirp = np.sin(2 * np.pi * (100 + 1950 * t) * t)
+
+# --------------------------------------------------------
+# 우리가 만든 STFT 실행 및 데시벨(dB) 변환
+# --------------------------------------------------------
+# STFT 행렬 획득! (2차원 Array)
+spec_matrix = my_stft(signal_chirp, n_fft=1024, hop_length=256)
+
+# 로그를 씌워 데시벨(dB)로 변환 (log10 안이 0이 되면 에러가 나므로 아주 작은 값 1e-10을 더해줌)
+spec_db = 20 * np.log10(spec_matrix + 1e-10)
+
+# --------------------------------------------------------
+# 2차원 이미지(Spectrogram)로 시각화
+# --------------------------------------------------------
+plt.figure(figsize=(12, 6))
+
+# pcolormesh나 imshow를 이용해 2차원 행렬을 열화상 카메라 사진처럼 그립니다.
+plt.imshow(spec_db, aspect='auto', origin='lower', cmap='magma', 
+           extent=[0, 2, 0, fs/2])
+
+plt.colorbar(format='%+2.0f dB', label='Magnitude (dB)')
+plt.title("My First Spectrogram (From Scratch!)", fontsize=16)
+plt.xlabel("Time (seconds)", fontsize=12)
+plt.ylabel("Frequency (Hz)", fontsize=12)
+plt.tight_layout()
+plt.show()
